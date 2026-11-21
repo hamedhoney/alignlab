@@ -5,10 +5,22 @@ description = "Reproducible experiments for small language model post-training"
 readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
-dependencies = ["torch>=2.3", "transformers>=4.51", "datasets>=3.0", "peft>=0.15", "trl>=0.17", "accelerate>=1.0", "pyyaml>=6.0"]
+dependencies = [
+    "torch>=2.3",
+    "transformers>=4.51",
+    "datasets>=3.0",
+    "peft>=0.15",
+    "trl>=0.17",
+    "accelerate>=1.0",
+    "pyyaml>=6.0",
+    "safetensors>=0.8.0",
+]
 
 [dependency-groups]
-dev = ["pytest>=8", "ruff>=0.11"]
+dev = [
+    "pytest>=8",
+    "ruff>=0.11",
+]
 
 [build-system]
 requires = ["hatchling"]
