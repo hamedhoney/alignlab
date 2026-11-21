@@ -1,4 +1,3 @@
-
 import time
 
 import torch
@@ -59,7 +58,7 @@ class LLMGenerator:
 
         elapsed = time.perf_counter() - start
 
-        generated_tokens = output[0][inputs["input_ids"].shape[-1]:]
+        generated_tokens = output[0][inputs["input_ids"].shape[-1] :]
 
         response = self.tokenizer.decode(
             generated_tokens,

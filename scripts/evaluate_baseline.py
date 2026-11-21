@@ -1,4 +1,3 @@
-
 import argparse
 import json
 from pathlib import Path
@@ -32,9 +31,7 @@ def main():
     output_file = output_dir / "predictions.jsonl"
 
     with output_file.open("w") as file:
-        for example in dataset.select(
-            range(min(args.limit, len(dataset)))
-        ):
+        for example in dataset.select(range(min(args.limit, len(dataset)))):
             result = generator.generate(example["prompt"])
 
             record = {
@@ -47,10 +44,7 @@ def main():
 
             file.write(json.dumps(record) + "\n")
 
-            print(
-                f"{record['task_id']}: "
-                f"{record['latency_seconds']:.2f}s"
-            )
+            print(f"{record['task_id']}: {record['latency_seconds']:.2f}s")
 
     print(f"Saved predictions to {output_file}")
 
