@@ -1,0 +1,8 @@
+# Placeholder configuration; training CLI is not implemented yet.
+model_id: Qwen/Qwen3-1.7B
+seed: 42
+training:
+  method: lora
+  learning_rate: 0.0002
+  epochs: 1
+  lora_rank: 16

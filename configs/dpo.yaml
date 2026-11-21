@@ -1,0 +1,7 @@
+# Placeholder configuration; DPO CLI is not implemented yet.
+model_id: Qwen/Qwen3-1.7B
+seed: 42
+training:
+  method: dpo
+  learning_rate: 0.000005
+  beta: 0.1
