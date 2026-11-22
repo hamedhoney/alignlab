@@ -1,3 +1,4 @@
+
 name: Train Qwen3 on Kaggle
 
 on:
@@ -6,24 +7,33 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: alignlab-kaggle-training
+  cancel-in-progress: false
+
 jobs:
   train:
     runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    env:
+      KERNEL_ID: hamedhani/01-qlora-finetuning
+      HF_REPO_ID: hamedready/alignlab-qwen3-1.7b-qlora
+      KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_API_TOKEN }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Python 3.12
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
-      - name: Install Kaggle CLI
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install kaggle six
-          python -m pip check
+          python -m pip install kaggle six huggingface_hub
 
       - name: Prepare notebook
         run: |
@@ -32,13 +42,115 @@ jobs:
           cp kaggle/kernel-metadata.json kaggle/run/
 
       - name: Submit Kaggle training
-        env:
-          KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_API_TOKEN }}
         run: |
           kaggle kernels push \
             -p kaggle/run \
             --accelerator NvidiaTeslaT4
 
-      - name: Show notebook URL
+      - name: Wait for Kaggle training
+        shell: bash
         run: |
-          echo "https://www.kaggle.com/code/hamedhani/01-qlora-finetuning"
+          set -euo pipefail
+
+          for attempt in $(seq 1 120); do
+            STATUS=$(kaggle kernels status "$KERNEL_ID" 2>&1)
+            echo "Attempt $attempt: $STATUS"
+
+            if echo "$STATUS" | grep -qi "complete"; then
+              echo "Kaggle training completed."
+              exit 0
+            fi
+
+            if echo "$STATUS" | grep -Eqi "error|failed|cancel"; then
+              echo "Kaggle training failed."
+              exit 1
+            fi
+
+            sleep 120
+          done
+
+          echo "Timed out waiting for Kaggle training."
+          exit 1
+
+      - name: Download Kaggle outputs
+        run: |
+          mkdir -p artifacts/kaggle
+
+          kaggle kernels output "$KERNEL_ID" \
+            -p artifacts/kaggle
+
+          find artifacts/kaggle -type f
+
+      - name: Locate LoRA adapter
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ADAPTER_CONFIG=$(find artifacts/kaggle \
+            -name adapter_config.json \
+            -not -path "*/checkpoints/*" \
+            -print -quit)
+
+          if [ -z "$ADAPTER_CONFIG" ]; then
+            echo "LoRA adapter not found."
+            exit 1
+          fi
+
+          ADAPTER_DIR=$(dirname "$ADAPTER_CONFIG")
+
+          if [ ! -f "$ADAPTER_DIR/adapter_model.safetensors" ]; then
+            echo "Adapter weights not found."
+            exit 1
+          fi
+
+          echo "ADAPTER_DIR=$ADAPTER_DIR" >> "$GITHUB_ENV"
+          echo "Found adapter: $ADAPTER_DIR"
+
+      - name: Upload adapter to Hugging Face
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python - <<'PY'
+          import os
+          from huggingface_hub import HfApi
+
+          token = os.environ["HF_TOKEN"]
+          repo_id = os.environ["HF_REPO_ID"]
+          adapter_dir = os.environ["ADAPTER_DIR"]
+
+          api = HfApi(token=token)
+
+          print("Authenticated as:", api.whoami()["name"])
+
+          api.create_repo(
+              repo_id=repo_id,
+              repo_type="model",
+              private=True,
+              exist_ok=True,
+          )
+
+          api.upload_folder(
+              folder_path=adapter_dir,
+              repo_id=repo_id,
+              repo_type="model",
+              commit_message="Upload AlignLab QLoRA adapter",
+          )
+
+          print(f"Published: https://huggingface.co/{repo_id}")
+          PY
+
+      - name: Upload training artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: alignlab-kaggle-results
+          path: artifacts/kaggle/
+          retention-days: 30
+
+      - name: Show results
+        if: success()
+        run: |
+          echo "## AlignLab Training Complete" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Kaggle: https://www.kaggle.com/code/$KERNEL_ID" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Hugging Face: https://huggingface.co/$HF_REPO_ID" >> "$GITHUB_STEP_SUMMARY"
