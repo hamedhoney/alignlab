@@ -1,0 +1,132 @@
+name: Publish DPO Adapter to Hugging Face
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: alignlab-publish-dpo
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_API_TOKEN }}
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      KERNEL_ID: hamedhani/03-alignlab-dpo-training
+      HF_REPO_ID: hamedready/alignlab-qwen3-1.7b-dpo
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install clients
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install kaggle six 'huggingface_hub>=0.30,<1'
+
+      - name: Verify credentials exist
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$KAGGLE_API_TOKEN" || { echo 'Missing KAGGLE_API_TOKEN'; exit 1; }
+          test -n "$HF_TOKEN" || { echo 'Missing HF_TOKEN'; exit 1; }
+
+      - name: Verify Kaggle run completed
+        shell: bash
+        run: |
+          set -euo pipefail
+          status="$(kaggle kernels status "$KERNEL_ID")"
+          echo "$status"
+          echo "$status" | grep -Fq 'KernelWorkerStatus.COMPLETE' || {
+            echo 'Kaggle DPO run is not COMPLETE; refusing to publish.' >&2
+            exit 1
+          }
+
+      - name: Download existing DPO outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/dpo
+          kaggle kernels output "$KERNEL_ID" -p artifacts/dpo
+          find artifacts/dpo -type f | sed -n '1,80p'
+
+      - name: Validate and upload DPO adapter
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          from huggingface_hub import HfApi
+
+          root = Path('artifacts/dpo')
+          configs = sorted(root.rglob('adapter_config.json'))
+          candidates = []
+          for config in configs:
+              directory = config.parent
+              if not any((directory / filename).is_file() for filename in (
+                  'adapter_model.safetensors', 'adapter_model.bin'
+              )):
+                  continue
+              try:
+                  metadata = json.loads(config.read_text(encoding='utf-8'))
+              except (OSError, json.JSONDecodeError) as exc:
+                  raise RuntimeError(f'Invalid adapter config: {config}') from exc
+              candidates.append((directory, metadata))
+
+          if not candidates:
+              raise RuntimeError('No complete PEFT adapter found in Kaggle outputs.')
+          # Prefer the final exported adapter over intermediate checkpoints.
+          final = [(p, m) for p, m in candidates if 'checkpoint-' not in str(p)]
+          if len(final) != 1:
+              raise RuntimeError(
+                  f'Expected exactly one final adapter, found {len(final)}: '
+                  f'{[str(p) for p, _ in final]}. Check the Kaggle output layout.'
+              )
+          adapter_dir, config = final[0]
+          print('Final adapter directory:', adapter_dir)
+          print('PEFT base model:', config.get('base_model_name_or_path'))
+          if config.get('peft_type') != 'LORA':
+              raise RuntimeError('Expected a LoRA PEFT adapter.')
+
+          api = HfApi(token=os.environ['HF_TOKEN'])
+          print('Hugging Face account:', api.whoami()['name'])
+          repo = os.environ['HF_REPO_ID']
+          api.create_repo(repo_id=repo, repo_type='model', private=True, exist_ok=True)
+          api.upload_folder(
+              repo_id=repo,
+              repo_type='model',
+              folder_path=str(adapter_dir),
+              commit_message=f'Publish DPO adapter from {os.environ["KERNEL_ID"]}',
+          )
+          print('Published:', f'https://huggingface.co/{repo}')
+          PY
+
+      - name: Save DPO outputs as workflow artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: alignlab-dpo-outputs
+          path: artifacts/dpo/
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Summary
+        if: success()
+        run: |
+          echo '## DPO Adapter Published' >> "$GITHUB_STEP_SUMMARY"
+          echo '' >> "$GITHUB_STEP_SUMMARY"
+          echo "Source: https://www.kaggle.com/code/$KERNEL_ID" >> "$GITHUB_STEP_SUMMARY"
+          echo '' >> "$GITHUB_STEP_SUMMARY"
+          echo "Model: https://huggingface.co/$HF_REPO_ID" >> "$GITHUB_STEP_SUMMARY"
