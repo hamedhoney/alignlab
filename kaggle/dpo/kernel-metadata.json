@@ -1,0 +1,15 @@
+{
+  "id": "hamedhani/03-alignlab-dpo-training",
+  "title": "03 AlignLab DPO Training",
+  "code_file": "03_dpo_training.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_internet": true,
+  "machine_shape": "NvidiaTeslaT4",
+  "dataset_sources": ["hamedhani/alignlab-qlora-adapter"],
+  "competition_sources": [],
+  "kernel_sources": [],
+  "model_sources": []
+}

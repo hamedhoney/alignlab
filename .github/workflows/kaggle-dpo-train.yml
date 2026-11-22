@@ -1,0 +1,95 @@
+name: Train DPO on Kaggle
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: alignlab-dpo-training
+  cancel-in-progress: false
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    env:
+      KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_API_TOKEN }}
+      KERNEL_ID: hamedhani/03-alignlab-dpo-training
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install Kaggle CLI
+        run: python -m pip install kaggle six
+      - name: Prepare DPO notebook
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$KAGGLE_API_TOKEN"
+          mkdir -p kaggle/dpo-run
+          cp notebooks/03_dpo_training.ipynb kaggle/dpo-run/
+          cp kaggle/dpo/kernel-metadata.json kaggle/dpo-run/kernel-metadata.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          m = json.loads(Path('kaggle/dpo-run/kernel-metadata.json').read_text())
+          assert m['id'] == 'hamedhani/03-alignlab-dpo-training'
+          assert m['title'] == '03 AlignLab DPO Training'
+          assert m['code_file'] == '03_dpo_training.ipynb'
+          assert 'hamedhani/alignlab-qlora-adapter' in m['dataset_sources']
+          PY
+      - name: Submit DPO training
+        run: kaggle kernels push -p kaggle/dpo-run --accelerator NvidiaTeslaT4
+      - name: Wait for Kaggle
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 120); do
+            set +e
+            status=$(kaggle kernels status "$KERNEL_ID" 2>&1)
+            code=$?
+            set -e
+            echo "Attempt $attempt: $status"
+            if [ "$code" -ne 0 ]; then
+              if echo "$status" | grep -Eqi '404|GetKernelSessionStatus'; then
+                sleep 30
+                continue
+              fi
+              exit "$code"
+            fi
+            if echo "$status" | grep -Fq 'KernelWorkerStatus.COMPLETE'; then
+              echo 'DPO training completed'
+              exit 0
+            fi
+            if echo "$status" | grep -Eq 'KernelWorkerStatus\.(ERROR|FAILED|CANCELLED|CANCELED)'; then
+              exit 1
+            fi
+            sleep 60
+          done
+          echo 'Kaggle training timed out' >&2
+          exit 1
+      - name: Download results
+        run: |
+          mkdir -p artifacts/dpo
+          kaggle kernels output "$KERNEL_ID" -p artifacts/dpo
+          find artifacts/dpo -type f
+          find artifacts/dpo -name dpo_report.json -print -quit | grep -q .
+      - name: Preserve artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: alignlab-dpo-results
+          path: artifacts/dpo/
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Summary
+        if: success()
+        run: |
+          echo '## DPO training complete' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Kaggle: https://www.kaggle.com/code/hamedhani/03-alignlab-dpo-training' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Adapter and metrics are in the workflow artifacts.' >> "$GITHUB_STEP_SUMMARY"
