@@ -1,0 +1,30 @@
+{
+  "model": "Qwen/Qwen3-1.7B",
+  "dataset": "yahma/alpaca-cleaned",
+  "seed": 42,
+  "train_examples": 100,
+  "eval_examples": 20,
+  "steps": 30,
+  "train_seconds": 142.022499422,
+  "train_metrics": {
+    "train_runtime": 140.9765,
+    "train_samples_per_second": 0.851,
+    "train_steps_per_second": 0.213,
+    "total_flos": 172959009196032.0,
+    "train_loss": 1.7137920697530111,
+    "epoch": 1.2
+  },
+  "eval_metrics": {
+    "eval_loss": 1.309160590171814,
+    "eval_runtime": 3.2087,
+    "eval_samples_per_second": 6.233,
+    "eval_steps_per_second": 6.233,
+    "eval_entropy": 1.311878463625908,
+    "eval_num_tokens": 20203.0,
+    "eval_mean_token_accuracy": 0.6790577858686447,
+    "epoch": 1.2
+  },
+  "prompt": "Explain the difference between supervised fine-tuning and retrieval-augmented generation in three bullet points.",
+  "baseline_response": "- **Supervised Fine-Tuning (SFT)**: This involves training a pre-trained language model on a large dataset of human-labeled data, where the model learns to generate responses based on the provided labels. It focuses on improving the model's ability to produce coherent and contextually appropriate outputs through direct training on labeled data.\n\n- **Retrieval-Augmented Generation (RAG)**: This method combines a pre-trained language model with a knowledge base or external search system. The model generates responses by first retrieving relevant information from the knowledge base and then using that information to refine its output, ensuring the response is both accurate and contextually relevant.\n\n- **Supervised Fine-Tuning** focuses on improving the model's output quality through direct training on labeled data, while **Retrieval-Augmented",
+  "finetuned_response": "- Supervised fine-tuning is a machine learning technique where a pre-trained model is trained on a specific task or dataset to improve its performance on that task. This involves fine-tuning the model's parameters using a labeled dataset to adapt it to the specific task at hand.\n\n- Retrieval-augmented generation is a machine learning technique where a pre-trained model is used to generate text, but the model is augmented with information retrieved from a database or other source to improve the quality and relevance of the generated text. This technique is often used in applications such as chatbots and virtual assistants to provide more accurate and contextually relevant responses.\n\n- Both supervised fine-tuning and retrieval-augmented generation are techniques used to improve the performance of machine learning models on specific tasks. However, the former is a"
+}
