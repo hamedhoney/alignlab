@@ -35,6 +35,29 @@ jobs:
           test -n "$HF_TOKEN"
           python scripts/prepare_three_way_evaluation.py
           cp notebooks/04_three_way_evaluation.ipynb kaggle/three-way-run/
+      - name: Validate Kaggle input attachments
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PYCODE'
+          import json
+          from pathlib import Path
+
+          path = Path("kaggle/three-way-run/kernel-metadata.json")
+          metadata = json.loads(path.read_text(encoding="utf-8"))
+          expected = {
+              "hamedhani/alignlab-qlora-adapter",
+              "hamedhani/alignlab-dpo-adapter",
+          }
+          actual = set(metadata.get("dataset_sources", []))
+          print("Kaggle dataset sources:", sorted(actual))
+          if actual != expected:
+              raise SystemExit(f"Incorrect dataset sources: {actual}")
+          if metadata.get("id") != "hamedhani/04-alignlab-three-way-evaluation":
+              raise SystemExit("Unexpected kernel ID")
+          if metadata.get("code_file") != "04_three_way_evaluation.ipynb":
+              raise SystemExit("Unexpected code file")
+          PYCODE
       - name: Submit evaluation
         run: kaggle kernels push -p kaggle/three-way-run --accelerator NvidiaTeslaT4
       - name: Wait for evaluation

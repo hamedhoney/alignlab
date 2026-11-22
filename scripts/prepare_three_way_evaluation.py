@@ -75,16 +75,25 @@ def main() -> None:
         command = ["kaggle", "datasets", "create", "-p", str(STAGE_DIR), "--dir-mode", "skip"]
     subprocess.run(command, check=True)
     print("DPO dataset staged:", DATASET_REF)
+    # Verify the uploaded dataset is visible before submitting a GPU notebook.
+    refreshed = api.dataset_list(user="hamedhani", search="alignlab-dpo-adapter")
+    if not any(getattr(item, "ref", None) == DATASET_REF for item in refreshed):
+        raise RuntimeError(f"Kaggle dataset is not visible after upload: {DATASET_REF}")
 
     metadata = json.loads(Path("kaggle/three-way/kernel-metadata.json").read_text())
     expected = {"hamedhani/alignlab-qlora-adapter", DATASET_REF}
     if set(metadata["dataset_sources"]) != expected:
         raise ValueError("Experiment 04 must attach both SFT and DPO datasets")
+    if metadata.get("id") != "hamedhani/04-alignlab-three-way-evaluation":
+        raise ValueError("Unexpected Kaggle kernel ID")
+    if metadata.get("code_file") != "04_three_way_evaluation.ipynb":
+        raise ValueError("Unexpected Kaggle code_file")
     RUN_DIR.mkdir(parents=True, exist_ok=True)
     (RUN_DIR / "kernel-metadata.json").write_text(
         json.dumps(metadata, indent=2) + "\n", encoding="utf-8"
     )
     print("Notebook metadata prepared:", RUN_DIR / "kernel-metadata.json")
+    print("Dataset sources:", metadata["dataset_sources"])
 
 
 if __name__ == "__main__":
