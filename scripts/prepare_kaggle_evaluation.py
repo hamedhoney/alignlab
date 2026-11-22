@@ -22,13 +22,12 @@ def run_command(command: list[str]) -> None:
 
 
 def dataset_exists(api: KaggleApi, dataset_ref: str) -> bool:
-    """Check whether a Kaggle dataset exists without modifying files."""
+    """Check whether the Kaggle dataset exists."""
     username, slug = dataset_ref.split("/", maxsplit=1)
 
     datasets = api.dataset_list(
         user=username,
         search=slug,
-        page_size=100,
     )
 
     return any(getattr(dataset, "ref", None) == dataset_ref for dataset in datasets)
