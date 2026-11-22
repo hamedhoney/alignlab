@@ -1,0 +1,883 @@
+{
+  "experiment": "04_three_way_evaluation",
+  "timestamp_utc": "2026-11-22T15:47:22.216141+00:00",
+  "base_model": "Qwen/Qwen3-1.7B",
+  "sft_adapter": "hamedready/alignlab-qwen3-1.7b-qlora",
+  "dpo_adapter": "hamedready/alignlab-qwen3-1.7b-dpo",
+  "dataset": "trl-lib/ultrafeedback_binarized",
+  "split": "test",
+  "selection": "shuffle(seed=42)[16:56]",
+  "examples": 40,
+  "max_length": 512,
+  "torch_version": "2.11.0+cu130",
+  "transformers_version": "4.57.6",
+  "peft_version": "0.18.1",
+  "scoring": "mean conditional completion log probability per token",
+  "base": {
+    "preference_accuracy": 0.625,
+    "mean_margin": -0.18511225879192353,
+    "mean_chosen_logprob": -2.7661584585905077,
+    "mean_rejected_logprob": -2.581046199798584,
+    "evaluation_seconds": 11.051111333999984,
+    "per_example": [
+      {
+        "index": 0,
+        "chosen_logprob": -2.2767441272735596,
+        "rejected_logprob": -2.2194457054138184,
+        "margin": -0.05729842185974121,
+        "correct": false
+      },
+      {
+        "index": 1,
+        "chosen_logprob": -1.077391505241394,
+        "rejected_logprob": -1.443556308746338,
+        "margin": 0.36616480350494385,
+        "correct": true
+      },
+      {
+        "index": 2,
+        "chosen_logprob": -4.001220703125,
+        "rejected_logprob": -4.601944923400879,
+        "margin": 0.6007242202758789,
+        "correct": true
+      },
+      {
+        "index": 3,
+        "chosen_logprob": -2.5598251819610596,
+        "rejected_logprob": -1.5001789331436157,
+        "margin": -1.0596462488174438,
+        "correct": false
+      },
+      {
+        "index": 4,
+        "chosen_logprob": -1.7072162628173828,
+        "rejected_logprob": -1.9094593524932861,
+        "margin": 0.20224308967590332,
+        "correct": true
+      },
+      {
+        "index": 5,
+        "chosen_logprob": -1.5574665069580078,
+        "rejected_logprob": -1.094914436340332,
+        "margin": -0.4625520706176758,
+        "correct": false
+      },
+      {
+        "index": 6,
+        "chosen_logprob": -1.8698384761810303,
+        "rejected_logprob": -2.3343558311462402,
+        "margin": 0.46451735496520996,
+        "correct": true
+      },
+      {
+        "index": 7,
+        "chosen_logprob": -2.1836395263671875,
+        "rejected_logprob": -2.2992422580718994,
+        "margin": 0.11560273170471191,
+        "correct": true
+      },
+      {
+        "index": 8,
+        "chosen_logprob": -2.170140266418457,
+        "rejected_logprob": -2.6243419647216797,
+        "margin": 0.45420169830322266,
+        "correct": true
+      },
+      {
+        "index": 9,
+        "chosen_logprob": -1.9679384231567383,
+        "rejected_logprob": -2.309946060180664,
+        "margin": 0.3420076370239258,
+        "correct": true
+      },
+      {
+        "index": 10,
+        "chosen_logprob": -2.1323978900909424,
+        "rejected_logprob": -1.9518849849700928,
+        "margin": -0.1805129051208496,
+        "correct": false
+      },
+      {
+        "index": 11,
+        "chosen_logprob": -1.7119189500808716,
+        "rejected_logprob": -1.6245989799499512,
+        "margin": -0.08731997013092041,
+        "correct": false
+      },
+      {
+        "index": 12,
+        "chosen_logprob": -2.068025827407837,
+        "rejected_logprob": -4.550247669219971,
+        "margin": 2.482221841812134,
+        "correct": true
+      },
+      {
+        "index": 13,
+        "chosen_logprob": -2.997403621673584,
+        "rejected_logprob": -2.8958067893981934,
+        "margin": -0.10159683227539062,
+        "correct": false
+      },
+      {
+        "index": 14,
+        "chosen_logprob": -1.9047667980194092,
+        "rejected_logprob": -4.020411491394043,
+        "margin": 2.115644693374634,
+        "correct": true
+      },
+      {
+        "index": 15,
+        "chosen_logprob": -1.9780585765838623,
+        "rejected_logprob": -1.6602357625961304,
+        "margin": -0.31782281398773193,
+        "correct": false
+      },
+      {
+        "index": 16,
+        "chosen_logprob": -2.141862392425537,
+        "rejected_logprob": -2.30672287940979,
+        "margin": 0.16486048698425293,
+        "correct": true
+      },
+      {
+        "index": 17,
+        "chosen_logprob": -3.6866719722747803,
+        "rejected_logprob": -3.956937313079834,
+        "margin": 0.2702653408050537,
+        "correct": true
+      },
+      {
+        "index": 18,
+        "chosen_logprob": -1.2299023866653442,
+        "rejected_logprob": -1.938468098640442,
+        "margin": 0.7085657119750977,
+        "correct": true
+      },
+      {
+        "index": 19,
+        "chosen_logprob": -1.2257568836212158,
+        "rejected_logprob": -1.5438235998153687,
+        "margin": 0.31806671619415283,
+        "correct": true
+      },
+      {
+        "index": 20,
+        "chosen_logprob": -1.2506462335586548,
+        "rejected_logprob": -1.7049813270568848,
+        "margin": 0.45433509349823,
+        "correct": true
+      },
+      {
+        "index": 21,
+        "chosen_logprob": -1.2095575332641602,
+        "rejected_logprob": -1.035423994064331,
+        "margin": -0.1741335391998291,
+        "correct": false
+      },
+      {
+        "index": 22,
+        "chosen_logprob": -2.1917693614959717,
+        "rejected_logprob": -2.010235548019409,
+        "margin": -0.1815338134765625,
+        "correct": false
+      },
+      {
+        "index": 23,
+        "chosen_logprob": -1.96123206615448,
+        "rejected_logprob": -1.861669898033142,
+        "margin": -0.09956216812133789,
+        "correct": false
+      },
+      {
+        "index": 24,
+        "chosen_logprob": -1.993591547012329,
+        "rejected_logprob": -2.051530361175537,
+        "margin": 0.05793881416320801,
+        "correct": true
+      },
+      {
+        "index": 25,
+        "chosen_logprob": -2.461782932281494,
+        "rejected_logprob": -3.1579413414001465,
+        "margin": 0.6961584091186523,
+        "correct": true
+      },
+      {
+        "index": 26,
+        "chosen_logprob": -2.436530113220215,
+        "rejected_logprob": -4.574548721313477,
+        "margin": 2.1380186080932617,
+        "correct": true
+      },
+      {
+        "index": 27,
+        "chosen_logprob": -2.6080355644226074,
+        "rejected_logprob": -3.108696937561035,
+        "margin": 0.5006613731384277,
+        "correct": true
+      },
+      {
+        "index": 28,
+        "chosen_logprob": -8.159624099731445,
+        "rejected_logprob": -4.981439590454102,
+        "margin": -3.1781845092773438,
+        "correct": false
+      },
+      {
+        "index": 29,
+        "chosen_logprob": -18.902259826660156,
+        "rejected_logprob": -2.873112440109253,
+        "margin": -16.029147386550903,
+        "correct": false
+      },
+      {
+        "index": 30,
+        "chosen_logprob": -1.830015778541565,
+        "rejected_logprob": -1.5326486825942993,
+        "margin": -0.2973670959472656,
+        "correct": false
+      },
+      {
+        "index": 31,
+        "chosen_logprob": -2.416698932647705,
+        "rejected_logprob": -3.059717893600464,
+        "margin": 0.6430189609527588,
+        "correct": true
+      },
+      {
+        "index": 32,
+        "chosen_logprob": -1.1921995878219604,
+        "rejected_logprob": -2.0825819969177246,
+        "margin": 0.8903824090957642,
+        "correct": true
+      },
+      {
+        "index": 33,
+        "chosen_logprob": -4.1247334480285645,
+        "rejected_logprob": -2.5417444705963135,
+        "margin": -1.582988977432251,
+        "correct": false
+      },
+      {
+        "index": 34,
+        "chosen_logprob": -1.087143063545227,
+        "rejected_logprob": -1.570070505142212,
+        "margin": 0.48292744159698486,
+        "correct": true
+      },
+      {
+        "index": 35,
+        "chosen_logprob": -1.3886983394622803,
+        "rejected_logprob": -2.0765268802642822,
+        "margin": 0.687828540802002,
+        "correct": true
+      },
+      {
+        "index": 36,
+        "chosen_logprob": -2.0994296073913574,
+        "rejected_logprob": -3.8962807655334473,
+        "margin": 1.7968511581420898,
+        "correct": true
+      },
+      {
+        "index": 37,
+        "chosen_logprob": -6.702404975891113,
+        "rejected_logprob": -5.581516265869141,
+        "margin": -1.1208887100219727,
+        "correct": false
+      },
+      {
+        "index": 38,
+        "chosen_logprob": -2.4179880619049072,
+        "rejected_logprob": -2.927499532699585,
+        "margin": 0.5095114707946777,
+        "correct": true
+      },
+      {
+        "index": 39,
+        "chosen_logprob": -1.7638109922409058,
+        "rejected_logprob": -1.8271574974060059,
+        "margin": 0.0633465051651001,
+        "correct": true
+      }
+    ]
+  },
+  "sft": {
+    "preference_accuracy": 0.5,
+    "mean_margin": -0.02165500745177269,
+    "mean_chosen_logprob": -1.4349173091351985,
+    "mean_rejected_logprob": -1.4132623016834258,
+    "evaluation_seconds": 12.212455933000001,
+    "per_example": [
+      {
+        "index": 0,
+        "chosen_logprob": -1.2631813287734985,
+        "rejected_logprob": -1.3013945817947388,
+        "margin": 0.038213253021240234,
+        "correct": true
+      },
+      {
+        "index": 1,
+        "chosen_logprob": -0.4249853789806366,
+        "rejected_logprob": -0.5323290228843689,
+        "margin": 0.1073436439037323,
+        "correct": true
+      },
+      {
+        "index": 2,
+        "chosen_logprob": -0.6867607235908508,
+        "rejected_logprob": -1.9139671325683594,
+        "margin": 1.2272064089775085,
+        "correct": true
+      },
+      {
+        "index": 3,
+        "chosen_logprob": -1.928646206855774,
+        "rejected_logprob": -1.4371675252914429,
+        "margin": -0.49147868156433105,
+        "correct": false
+      },
+      {
+        "index": 4,
+        "chosen_logprob": -1.2662245035171509,
+        "rejected_logprob": -1.2246736288070679,
+        "margin": -0.04155087471008301,
+        "correct": false
+      },
+      {
+        "index": 5,
+        "chosen_logprob": -0.7554374933242798,
+        "rejected_logprob": -0.5897631645202637,
+        "margin": -0.1656743288040161,
+        "correct": false
+      },
+      {
+        "index": 6,
+        "chosen_logprob": -1.41014564037323,
+        "rejected_logprob": -1.5872368812561035,
+        "margin": 0.17709124088287354,
+        "correct": true
+      },
+      {
+        "index": 7,
+        "chosen_logprob": -1.4019066095352173,
+        "rejected_logprob": -1.370578646659851,
+        "margin": -0.03132796287536621,
+        "correct": false
+      },
+      {
+        "index": 8,
+        "chosen_logprob": -1.4419736862182617,
+        "rejected_logprob": -1.7841057777404785,
+        "margin": 0.3421320915222168,
+        "correct": true
+      },
+      {
+        "index": 9,
+        "chosen_logprob": -1.4351054430007935,
+        "rejected_logprob": -1.800228476524353,
+        "margin": 0.36512303352355957,
+        "correct": true
+      },
+      {
+        "index": 10,
+        "chosen_logprob": -1.862813115119934,
+        "rejected_logprob": -1.391634464263916,
+        "margin": -0.47117865085601807,
+        "correct": false
+      },
+      {
+        "index": 11,
+        "chosen_logprob": -1.0387681722640991,
+        "rejected_logprob": -1.0738823413848877,
+        "margin": 0.035114169120788574,
+        "correct": true
+      },
+      {
+        "index": 12,
+        "chosen_logprob": -1.06969153881073,
+        "rejected_logprob": -2.367642402648926,
+        "margin": 1.2979508638381958,
+        "correct": true
+      },
+      {
+        "index": 13,
+        "chosen_logprob": -1.0745967626571655,
+        "rejected_logprob": -0.8033642768859863,
+        "margin": -0.2712324857711792,
+        "correct": false
+      },
+      {
+        "index": 14,
+        "chosen_logprob": -1.150624394416809,
+        "rejected_logprob": -1.5818356275558472,
+        "margin": 0.4312112331390381,
+        "correct": true
+      },
+      {
+        "index": 15,
+        "chosen_logprob": -1.3885719776153564,
+        "rejected_logprob": -1.0820077657699585,
+        "margin": -0.30656421184539795,
+        "correct": false
+      },
+      {
+        "index": 16,
+        "chosen_logprob": -1.001085638999939,
+        "rejected_logprob": -1.2049123048782349,
+        "margin": 0.2038266658782959,
+        "correct": true
+      },
+      {
+        "index": 17,
+        "chosen_logprob": -1.0885412693023682,
+        "rejected_logprob": -1.0775004625320435,
+        "margin": -0.011040806770324707,
+        "correct": false
+      },
+      {
+        "index": 18,
+        "chosen_logprob": -0.8344674706459045,
+        "rejected_logprob": -1.3503531217575073,
+        "margin": 0.5158856511116028,
+        "correct": true
+      },
+      {
+        "index": 19,
+        "chosen_logprob": -0.9230101108551025,
+        "rejected_logprob": -1.1383095979690552,
+        "margin": 0.21529948711395264,
+        "correct": true
+      },
+      {
+        "index": 20,
+        "chosen_logprob": -1.1233093738555908,
+        "rejected_logprob": -1.6473795175552368,
+        "margin": 0.524070143699646,
+        "correct": true
+      },
+      {
+        "index": 21,
+        "chosen_logprob": -0.5910850763320923,
+        "rejected_logprob": -0.3775343894958496,
+        "margin": -0.21355068683624268,
+        "correct": false
+      },
+      {
+        "index": 22,
+        "chosen_logprob": -1.4238121509552002,
+        "rejected_logprob": -1.5280383825302124,
+        "margin": 0.10422623157501221,
+        "correct": true
+      },
+      {
+        "index": 23,
+        "chosen_logprob": -1.2973605394363403,
+        "rejected_logprob": -1.2522120475769043,
+        "margin": -0.045148491859436035,
+        "correct": false
+      },
+      {
+        "index": 24,
+        "chosen_logprob": -1.3430757522583008,
+        "rejected_logprob": -0.7759267687797546,
+        "margin": -0.5671489834785461,
+        "correct": false
+      },
+      {
+        "index": 25,
+        "chosen_logprob": -1.3063828945159912,
+        "rejected_logprob": -1.2935926914215088,
+        "margin": -0.012790203094482422,
+        "correct": false
+      },
+      {
+        "index": 26,
+        "chosen_logprob": -1.6756234169006348,
+        "rejected_logprob": -2.732539176940918,
+        "margin": 1.0569157600402832,
+        "correct": true
+      },
+      {
+        "index": 27,
+        "chosen_logprob": -1.3756242990493774,
+        "rejected_logprob": -1.3614416122436523,
+        "margin": -0.014182686805725098,
+        "correct": false
+      },
+      {
+        "index": 28,
+        "chosen_logprob": -1.9912405014038086,
+        "rejected_logprob": -1.2644537687301636,
+        "margin": -0.726786732673645,
+        "correct": false
+      },
+      {
+        "index": 29,
+        "chosen_logprob": -5.635312080383301,
+        "rejected_logprob": -1.0630693435668945,
+        "margin": -4.572242736816406,
+        "correct": false
+      },
+      {
+        "index": 30,
+        "chosen_logprob": -1.664483904838562,
+        "rejected_logprob": -1.3746086359024048,
+        "margin": -0.2898752689361572,
+        "correct": false
+      },
+      {
+        "index": 31,
+        "chosen_logprob": -1.1982126235961914,
+        "rejected_logprob": -1.4092259407043457,
+        "margin": 0.2110133171081543,
+        "correct": true
+      },
+      {
+        "index": 32,
+        "chosen_logprob": -1.0390385389328003,
+        "rejected_logprob": -1.1801055669784546,
+        "margin": 0.1410670280456543,
+        "correct": true
+      },
+      {
+        "index": 33,
+        "chosen_logprob": -1.8337732553482056,
+        "rejected_logprob": -1.6219013929367065,
+        "margin": -0.21187186241149902,
+        "correct": false
+      },
+      {
+        "index": 34,
+        "chosen_logprob": -0.7020031213760376,
+        "rejected_logprob": -1.1882424354553223,
+        "margin": 0.48623931407928467,
+        "correct": true
+      },
+      {
+        "index": 35,
+        "chosen_logprob": -1.2425403594970703,
+        "rejected_logprob": -1.5558021068572998,
+        "margin": 0.3132617473602295,
+        "correct": true
+      },
+      {
+        "index": 36,
+        "chosen_logprob": -1.0439616441726685,
+        "rejected_logprob": -1.8345447778701782,
+        "margin": 0.7905831336975098,
+        "correct": true
+      },
+      {
+        "index": 37,
+        "chosen_logprob": -4.543980121612549,
+        "rejected_logprob": -3.5597405433654785,
+        "margin": -0.9842395782470703,
+        "correct": false
+      },
+      {
+        "index": 38,
+        "chosen_logprob": -1.587654948234558,
+        "rejected_logprob": -1.5814913511276245,
+        "margin": -0.006163597106933594,
+        "correct": false
+      },
+      {
+        "index": 39,
+        "chosen_logprob": -1.3316802978515625,
+        "rejected_logprob": -1.3157544136047363,
+        "margin": -0.015925884246826172,
+        "correct": false
+      }
+    ]
+  },
+  "dpo": {
+    "preference_accuracy": 0.5,
+    "mean_margin": -0.020844030380249023,
+    "mean_chosen_logprob": -1.4355899386107922,
+    "mean_rejected_logprob": -1.4147459082305431,
+    "evaluation_seconds": 12.288478666999993,
+    "per_example": [
+      {
+        "index": 0,
+        "chosen_logprob": -1.2637958526611328,
+        "rejected_logprob": -1.2997082471847534,
+        "margin": 0.035912394523620605,
+        "correct": true
+      },
+      {
+        "index": 1,
+        "chosen_logprob": -0.4267570674419403,
+        "rejected_logprob": -0.5342375636100769,
+        "margin": 0.1074804961681366,
+        "correct": true
+      },
+      {
+        "index": 2,
+        "chosen_logprob": -0.6870750188827515,
+        "rejected_logprob": -1.9181740283966064,
+        "margin": 1.231099009513855,
+        "correct": true
+      },
+      {
+        "index": 3,
+        "chosen_logprob": -1.9286915063858032,
+        "rejected_logprob": -1.4379081726074219,
+        "margin": -0.49078333377838135,
+        "correct": false
+      },
+      {
+        "index": 4,
+        "chosen_logprob": -1.2668509483337402,
+        "rejected_logprob": -1.2241804599761963,
+        "margin": -0.042670488357543945,
+        "correct": false
+      },
+      {
+        "index": 5,
+        "chosen_logprob": -0.7552065849304199,
+        "rejected_logprob": -0.5897360444068909,
+        "margin": -0.16547054052352905,
+        "correct": false
+      },
+      {
+        "index": 6,
+        "chosen_logprob": -1.409267783164978,
+        "rejected_logprob": -1.5876981019973755,
+        "margin": 0.17843031883239746,
+        "correct": true
+      },
+      {
+        "index": 7,
+        "chosen_logprob": -1.4003255367279053,
+        "rejected_logprob": -1.3726953268051147,
+        "margin": -0.027630209922790527,
+        "correct": false
+      },
+      {
+        "index": 8,
+        "chosen_logprob": -1.4410783052444458,
+        "rejected_logprob": -1.7836945056915283,
+        "margin": 0.3426162004470825,
+        "correct": true
+      },
+      {
+        "index": 9,
+        "chosen_logprob": -1.4364503622055054,
+        "rejected_logprob": -1.8029316663742065,
+        "margin": 0.36648130416870117,
+        "correct": true
+      },
+      {
+        "index": 10,
+        "chosen_logprob": -1.8622167110443115,
+        "rejected_logprob": -1.3923461437225342,
+        "margin": -0.46987056732177734,
+        "correct": false
+      },
+      {
+        "index": 11,
+        "chosen_logprob": -1.0369701385498047,
+        "rejected_logprob": -1.073225975036621,
+        "margin": 0.036255836486816406,
+        "correct": true
+      },
+      {
+        "index": 12,
+        "chosen_logprob": -1.0733513832092285,
+        "rejected_logprob": -2.3782784938812256,
+        "margin": 1.304927110671997,
+        "correct": true
+      },
+      {
+        "index": 13,
+        "chosen_logprob": -1.0745161771774292,
+        "rejected_logprob": -0.8037713170051575,
+        "margin": -0.27074486017227173,
+        "correct": false
+      },
+      {
+        "index": 14,
+        "chosen_logprob": -1.1505534648895264,
+        "rejected_logprob": -1.5830680131912231,
+        "margin": 0.4325145483016968,
+        "correct": true
+      },
+      {
+        "index": 15,
+        "chosen_logprob": -1.3865569829940796,
+        "rejected_logprob": -1.0815541744232178,
+        "margin": -0.3050028085708618,
+        "correct": false
+      },
+      {
+        "index": 16,
+        "chosen_logprob": -1.0004127025604248,
+        "rejected_logprob": -1.2057424783706665,
+        "margin": 0.2053297758102417,
+        "correct": true
+      },
+      {
+        "index": 17,
+        "chosen_logprob": -1.090187668800354,
+        "rejected_logprob": -1.0768146514892578,
+        "margin": -0.013373017311096191,
+        "correct": false
+      },
+      {
+        "index": 18,
+        "chosen_logprob": -0.835658848285675,
+        "rejected_logprob": -1.3506804704666138,
+        "margin": 0.5150216221809387,
+        "correct": true
+      },
+      {
+        "index": 19,
+        "chosen_logprob": -0.923530638217926,
+        "rejected_logprob": -1.1373579502105713,
+        "margin": 0.21382731199264526,
+        "correct": true
+      },
+      {
+        "index": 20,
+        "chosen_logprob": -1.124959111213684,
+        "rejected_logprob": -1.648412823677063,
+        "margin": 0.5234537124633789,
+        "correct": true
+      },
+      {
+        "index": 21,
+        "chosen_logprob": -0.5890276432037354,
+        "rejected_logprob": -0.37893298268318176,
+        "margin": -0.2100946605205536,
+        "correct": false
+      },
+      {
+        "index": 22,
+        "chosen_logprob": -1.4236539602279663,
+        "rejected_logprob": -1.5276471376419067,
+        "margin": 0.10399317741394043,
+        "correct": true
+      },
+      {
+        "index": 23,
+        "chosen_logprob": -1.2963989973068237,
+        "rejected_logprob": -1.251813292503357,
+        "margin": -0.0445857048034668,
+        "correct": false
+      },
+      {
+        "index": 24,
+        "chosen_logprob": -1.3433669805526733,
+        "rejected_logprob": -0.777546763420105,
+        "margin": -0.5658202171325684,
+        "correct": false
+      },
+      {
+        "index": 25,
+        "chosen_logprob": -1.3079044818878174,
+        "rejected_logprob": -1.297408103942871,
+        "margin": -0.010496377944946289,
+        "correct": false
+      },
+      {
+        "index": 26,
+        "chosen_logprob": -1.6745681762695312,
+        "rejected_logprob": -2.736086130142212,
+        "margin": 1.0615179538726807,
+        "correct": true
+      },
+      {
+        "index": 27,
+        "chosen_logprob": -1.3752621412277222,
+        "rejected_logprob": -1.3614267110824585,
+        "margin": -0.013835430145263672,
+        "correct": false
+      },
+      {
+        "index": 28,
+        "chosen_logprob": -1.987582802772522,
+        "rejected_logprob": -1.2754243612289429,
+        "margin": -0.7121584415435791,
+        "correct": false
+      },
+      {
+        "index": 29,
+        "chosen_logprob": -5.654220104217529,
+        "rejected_logprob": -1.0559241771697998,
+        "margin": -4.5982959270477295,
+        "correct": false
+      },
+      {
+        "index": 30,
+        "chosen_logprob": -1.6644976139068604,
+        "rejected_logprob": -1.3760349750518799,
+        "margin": -0.28846263885498047,
+        "correct": false
+      },
+      {
+        "index": 31,
+        "chosen_logprob": -1.1992651224136353,
+        "rejected_logprob": -1.4088010787963867,
+        "margin": 0.20953595638275146,
+        "correct": true
+      },
+      {
+        "index": 32,
+        "chosen_logprob": -1.0380526781082153,
+        "rejected_logprob": -1.1818010807037354,
+        "margin": 0.14374840259552002,
+        "correct": true
+      },
+      {
+        "index": 33,
+        "chosen_logprob": -1.8342316150665283,
+        "rejected_logprob": -1.6210899353027344,
+        "margin": -0.21314167976379395,
+        "correct": false
+      },
+      {
+        "index": 34,
+        "chosen_logprob": -0.7025682926177979,
+        "rejected_logprob": -1.187987208366394,
+        "margin": 0.4854189157485962,
+        "correct": true
+      },
+      {
+        "index": 35,
+        "chosen_logprob": -1.2420566082000732,
+        "rejected_logprob": -1.557927131652832,
+        "margin": 0.3158705234527588,
+        "correct": true
+      },
+      {
+        "index": 36,
+        "chosen_logprob": -1.0403465032577515,
+        "rejected_logprob": -1.8355858325958252,
+        "margin": 0.7952393293380737,
+        "correct": true
+      },
+      {
+        "index": 37,
+        "chosen_logprob": -4.560533046722412,
+        "rejected_logprob": -3.5783419609069824,
+        "margin": -0.9821910858154297,
+        "correct": false
+      },
+      {
+        "index": 38,
+        "chosen_logprob": -1.5853874683380127,
+        "rejected_logprob": -1.5811713933944702,
+        "margin": -0.0042160749435424805,
+        "correct": false
+      },
+      {
+        "index": 39,
+        "chosen_logprob": -1.3302605152130127,
+        "rejected_logprob": -1.3166694641113281,
+        "margin": -0.01359105110168457,
+        "correct": false
+      }
+    ]
+  }
+}
