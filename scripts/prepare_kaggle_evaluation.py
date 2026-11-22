@@ -22,19 +22,16 @@ def run_command(command: list[str]) -> None:
 
 
 def dataset_exists(api: KaggleApi, dataset_ref: str) -> bool:
-    """Check existence without writing to the local staging directory."""
-    try:
-        api.dataset_view(dataset_ref)
-        return True
-    except Exception as exc:
-        # Never treat auth, quota, or transient failures as a missing dataset.
-        status = getattr(exc, "status", None)
-        if status is None:
-            status = getattr(getattr(exc, "response", None), "status_code", None)
-        message = str(exc).lower()
-        if status == 404 or (status is None and "404" in message):
-            return False
-        raise RuntimeError(f"Unable to inspect Kaggle dataset {dataset_ref}: {exc}") from exc
+    """Check whether a Kaggle dataset exists without modifying files."""
+    username, slug = dataset_ref.split("/", maxsplit=1)
+
+    datasets = api.dataset_list(
+        user=username,
+        search=slug,
+        page_size=100,
+    )
+
+    return any(getattr(dataset, "ref", None) == dataset_ref for dataset in datasets)
 
 
 def main() -> None:
