@@ -1,0 +1,90 @@
+name: Publish Three-Way Evaluation Results
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: alignlab-three-way-publishing
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_API_TOKEN }}
+      KERNEL_ID: hamedhani/04-alignlab-three-way-evaluation
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install Kaggle CLI
+        run: python -m pip install kaggle six
+      - name: Confirm Kaggle completion
+        shell: bash
+        run: |
+          set -euo pipefail
+          STATUS=$(kaggle kernels status "$KERNEL_ID")
+          echo "$STATUS"
+          echo "$STATUS" | grep -Fq 'KernelWorkerStatus.COMPLETE'
+      - name: Download and validate report
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/three-way
+          kaggle kernels output "$KERNEL_ID" -p artifacts/three-way
+          REPORT=$(find artifacts/three-way -type f -name three_way_comparison.json -print -quit)
+          test -n "$REPORT"
+          python -m json.tool "$REPORT" > /dev/null
+          python - "$REPORT" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+
+          report = json.loads(Path(sys.argv[1]).read_text())
+          assert report["experiment"] == "04_three_way_evaluation"
+          for key in ("base", "sft", "dpo"):
+              assert 0 <= report[key]["preference_accuracy"] <= 1
+          print("Validated three-way comparison")
+          PY
+          echo "REPORT=$REPORT" >> "$GITHUB_ENV"
+      - name: Commit results
+        shell: bash
+        env:
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          DEST="results/three-way/publish-${RUN_ID}-attempt-${RUN_ATTEMPT}"
+          mkdir -p "$DEST"
+          cp "$REPORT" "$DEST/three_way_comparison.json"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f "$DEST/three_way_comparison.json"
+          git commit -m "results: publish three-way evaluation ${RUN_ID}"
+          git fetch origin "$GITHUB_REF_NAME"
+          git rebase "origin/$GITHUB_REF_NAME"
+          git push origin "HEAD:$GITHUB_REF_NAME"
+          echo "DEST_REPORT=$DEST/three_way_comparison.json" >> "$GITHUB_ENV"
+      - name: Retain outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: alignlab-three-way-${{ github.run_id }}
+          path: artifacts/three-way/
+          retention-days: 30
+          if-no-files-found: warn
+      - name: Summary
+        if: success()
+        run: |
+          echo '## Three-way results published' >> "$GITHUB_STEP_SUMMARY"
+          echo "Committed: \`$DEST_REPORT\`" >> "$GITHUB_STEP_SUMMARY"
+          echo 'No GPU evaluation was started by this workflow.' >> "$GITHUB_STEP_SUMMARY"
