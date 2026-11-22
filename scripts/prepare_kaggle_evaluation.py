@@ -5,44 +5,55 @@ import subprocess
 from pathlib import Path
 
 from huggingface_hub import HfApi, snapshot_download
+from kaggle.api.kaggle_api_extended import KaggleApi
 
 KAGGLE_USER = "hamedhani"
-DATASET_SLUG = "alignlab-qlora-adapter"
-DATASET_REF = f"{KAGGLE_USER}/{DATASET_SLUG}"
-
+DATASET_REF = f"{KAGGLE_USER}/alignlab-qlora-adapter"
 ADAPTER_REPO = "hamedready/alignlab-qwen3-1.7b-qlora"
+KERNEL_ID = f"{KAGGLE_USER}/02-alignlab-model-evaluation"
+
+STAGE_DIR = Path("kaggle/adapter-stage")
+RUN_DIR = Path("kaggle/eval-run")
+SOURCE_METADATA = Path("kaggle/evaluation/kernel-metadata.json")
 
 
 def run_command(command: list[str]) -> None:
     subprocess.run(command, check=True)
 
 
+def dataset_exists(api: KaggleApi, dataset_ref: str) -> bool:
+    """Check existence without writing to the local staging directory."""
+    try:
+        api.dataset_view(dataset_ref)
+        return True
+    except Exception as exc:
+        # Never treat auth, quota, or transient failures as a missing dataset.
+        status = getattr(exc, "status", None)
+        if status is None:
+            status = getattr(getattr(exc, "response", None), "status_code", None)
+        message = str(exc).lower()
+        if status == 404 or (status is None and "404" in message):
+            return False
+        raise RuntimeError(f"Unable to inspect Kaggle dataset {dataset_ref}: {exc}") from exc
+
+
 def main() -> None:
-    token = os.environ["HF_TOKEN"]
+    hf_token = os.environ.get("HF_TOKEN", "").strip()
+    if not hf_token:
+        raise RuntimeError("HF_TOKEN must be set in GitHub Actions secrets")
 
-    # --------------------------------------------------
-    # 1. Prepare clean staging directory
-    # --------------------------------------------------
+    api_hf = HfApi(token=hf_token)
+    print("HF authenticated as:", api_hf.whoami()["name"])
 
-    stage = Path("kaggle/adapter-stage")
-
-    if stage.exists():
-        shutil.rmtree(stage)
-
-    stage.mkdir(parents=True)
-
-    # --------------------------------------------------
-    # 2. Download adapter from Hugging Face
-    # --------------------------------------------------
-
-    api = HfApi(token=token)
-
-    print("HF authenticated as:", api.whoami()["name"])
+    if STAGE_DIR.exists():
+        shutil.rmtree(STAGE_DIR)
+    STAGE_DIR.mkdir(parents=True)
 
     snapshot_download(
         repo_id=ADAPTER_REPO,
-        token=token,
-        local_dir=stage,
+        repo_type="model",
+        token=hf_token,
+        local_dir=str(STAGE_DIR),
         allow_patterns=[
             "adapter_config.json",
             "adapter_model.safetensors",
@@ -50,112 +61,66 @@ def main() -> None:
             "tokenizer*",
             "special_tokens_map.json",
             "added_tokens.json",
+            "generation_config.json",
         ],
     )
 
-    if not (stage / "adapter_config.json").is_file():
-        raise RuntimeError("Adapter config missing")
-
-    weights = [
-        "adapter_model.safetensors",
-        "adapter_model.bin",
-    ]
-
-    if not any((stage / name).is_file() for name in weights):
-        raise RuntimeError("Adapter weights missing")
-
-    # --------------------------------------------------
-    # 3. Create Kaggle dataset metadata
-    # --------------------------------------------------
+    if not (STAGE_DIR / "adapter_config.json").is_file():
+        raise FileNotFoundError("Missing adapter_config.json in Hugging Face adapter")
+    if not any(
+        (STAGE_DIR / name).is_file() for name in ("adapter_model.safetensors", "adapter_model.bin")
+    ):
+        raise FileNotFoundError("Missing adapter_model.safetensors or adapter_model.bin")
 
     dataset_metadata = {
-        "title": "AlignLab QLoRA Adapter",
+        "title": "AlignLab QLoRA Adapter (Private Evaluation Input)",
         "id": DATASET_REF,
         "licenses": [{"name": "unknown"}],
         "isPrivate": True,
     }
-
-    (stage / "dataset-metadata.json").write_text(
-        json.dumps(dataset_metadata, indent=2),
-        encoding="utf-8",
+    (STAGE_DIR / "dataset-metadata.json").write_text(
+        json.dumps(dataset_metadata, indent=2) + "\n", encoding="utf-8"
     )
 
-    # --------------------------------------------------
-    # 4. Create or update Kaggle dataset
-    # --------------------------------------------------
+    kaggle_api = KaggleApi()
+    kaggle_api.authenticate()
 
-    check = subprocess.run(
-        [
-            "kaggle",
-            "datasets",
-            "metadata",
-            DATASET_REF,
-            "-p",
-            str(stage),
-        ],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-
-    if check.returncode == 0:
-        print("Updating existing Kaggle dataset")
-
+    if dataset_exists(kaggle_api, DATASET_REF):
+        print("Updating existing Kaggle dataset:", DATASET_REF)
         run_command(
             [
                 "kaggle",
                 "datasets",
                 "version",
                 "-p",
-                str(stage),
+                str(STAGE_DIR),
                 "-m",
-                "Update QLoRA adapter",
+                "Update QLoRA adapter for evaluation",
                 "--dir-mode",
                 "skip",
             ]
         )
-
-    elif "404" in (check.stdout + check.stderr):
-        print("Creating new Kaggle dataset")
-
-        run_command(
-            [
-                "kaggle",
-                "datasets",
-                "create",
-                "-p",
-                str(stage),
-                "--dir-mode",
-                "skip",
-            ]
-        )
-
     else:
-        raise RuntimeError("Could not check Kaggle dataset: " + check.stderr)
+        print("Creating private Kaggle dataset:", DATASET_REF)
+        run_command(["kaggle", "datasets", "create", "-p", str(STAGE_DIR), "--dir-mode", "skip"])
 
-    print("Kaggle adapter dataset:", DATASET_REF)
+    if not SOURCE_METADATA.is_file():
+        raise FileNotFoundError(f"Missing evaluation metadata: {SOURCE_METADATA}")
 
-    # --------------------------------------------------
-    # 5. Prepare evaluation notebook metadata
-    # --------------------------------------------------
+    kernel_metadata = json.loads(SOURCE_METADATA.read_text(encoding="utf-8"))
+    if kernel_metadata.get("id") != KERNEL_ID:
+        raise ValueError(f"Expected kernel id {KERNEL_ID!r}")
+    if kernel_metadata.get("code_file") != "02_model_evaluation.ipynb":
+        raise ValueError("Evaluation code_file must be 02_model_evaluation.ipynb")
 
-    metadata_path = Path("kaggle/evaluation/kernel-metadata.json")
+    kernel_metadata["dataset_sources"] = [DATASET_REF]
+    RUN_DIR.mkdir(parents=True, exist_ok=True)
+    output_path = RUN_DIR / "kernel-metadata.json"
+    output_path.write_text(json.dumps(kernel_metadata, indent=2) + "\n", encoding="utf-8")
 
-    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
-
-    metadata["dataset_sources"] = [DATASET_REF]
-
-    run_dir = Path("kaggle/eval-run")
-    run_dir.mkdir(parents=True, exist_ok=True)
-
-    output_metadata = run_dir / "kernel-metadata.json"
-
-    output_metadata.write_text(
-        json.dumps(metadata, indent=2),
-        encoding="utf-8",
-    )
-
-    print("Evaluation metadata prepared:", output_metadata)
+    print("Staged adapter dataset:", DATASET_REF)
+    print("Prepared evaluation metadata:", output_path)
+    print("Dataset sources:", kernel_metadata["dataset_sources"])
 
 
 if __name__ == "__main__":
