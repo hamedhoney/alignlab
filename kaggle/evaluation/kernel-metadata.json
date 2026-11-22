@@ -1,6 +1,6 @@
 {
   "id": "hamedhani/02-alignlab-model-evaluation",
-  "title": "AlignLab - Qwen3 Base vs QLoRA Evaluation",
+  "title": "02 AlignLab Model Evaluation",
   "code_file": "02_model_evaluation.ipynb",
   "language": "python",
   "kernel_type": "notebook",

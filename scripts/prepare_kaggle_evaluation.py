@@ -104,6 +104,14 @@ def main() -> None:
         raise FileNotFoundError(f"Missing evaluation metadata: {SOURCE_METADATA}")
 
     kernel_metadata = json.loads(SOURCE_METADATA.read_text(encoding="utf-8"))
+    expected_title = "02 AlignLab Model Evaluation"
+
+    if kernel_metadata.get("title") != expected_title:
+        raise ValueError(
+            f"Incorrect Kaggle notebook title: "
+            f"{kernel_metadata.get('title')!r}. "
+            f"Expected {expected_title!r}."
+        )
     if kernel_metadata.get("id") != KERNEL_ID:
         raise ValueError(f"Expected kernel id {KERNEL_ID!r}")
     if kernel_metadata.get("code_file") != "02_model_evaluation.ipynb":
