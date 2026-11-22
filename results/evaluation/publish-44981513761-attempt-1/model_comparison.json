@@ -1,0 +1,155 @@
+{
+  "experiment": "02_model_evaluation",
+  "timestamp_utc": "2026-11-22T03:27:54.077300+00:00",
+  "base_model": "Qwen/Qwen3-1.7B",
+  "adapter": "hamedready/alignlab-qwen3-1.7b-qlora",
+  "adapter_source": "/kaggle/input/datasets/hamedhani/alignlab-qlora-adapter",
+  "dataset": "yahma/alpaca-cleaned",
+  "evaluation_split": "shuffle(seed=42)[120:160]",
+  "evaluation_examples": 40,
+  "max_length": 512,
+  "seed": 42,
+  "torch_version": "2.11.0+cu130",
+  "transformers_version": "4.57.6",
+  "peft_version": "0.18.1",
+  "base": {
+    "mean_token_nll": 2.8840213179343177,
+    "perplexity": 17.886054266391053,
+    "scored_tokens": 6808,
+    "examples_scored": 40,
+    "mean_generation_latency_seconds": 4.899905279400002,
+    "generations": [
+      {
+        "response": "Three important elements in an invitation letter are:\n\n1. **The sender's name and contact information** – This includes the sender's full name, address, phone number, and email address.\n\n2. **The date and time of the event** – This ensures clarity about when the event is happening and helps the recipient plan their schedule.\n\n3. **The event details** – This includes the location, the name of the event, and any additional information, such as whether it's a dinner, a meeting, or a celebration.",
+        "latency_seconds": 6.535910759000046,
+        "generated_tokens": 107
+      },
+      {
+        "response": "\"Due to the frozen roads, the car fishtailed on the icy surface.\"",
+        "latency_seconds": 1.0761831890000053,
+        "generated_tokens": 18
+      },
+      {
+        "response": "Machine learning is a subset of artificial intelligence that enables systems to learn from data, adapt to new information, and make decisions or predictions without being explicitly programmed.",
+        "latency_seconds": 1.917628389000015,
+        "generated_tokens": 32
+      },
+      {
+        "response": "In the heart of the enchanted forest of Elderglen, where the trees whispered secrets to the wind and the rivers sang lullabies to the moon, there lived a monster known as Thalor, the Guardian of Shadows. He was not a beast in the traditional sense—he was a being of deep, ancient magic, woven from the very essence of the forest itself. His eyes were twin orbs of molten silver, glowing with the wisdom of centuries, and his body was covered in scales that shimmered like starlight, shifting colors with the light of the sun.\n\nThalor was not feared by the forest dwellers, but",
+        "latency_seconds": 7.496298772999978,
+        "generated_tokens": 128
+      },
+      {
+        "response": "Certainly! Here's a compelling storyline that blends **fantasy** and **science fiction** elements, set in a world where ancient magic and futuristic technology coexist.\n\n---\n\n### **Title:** *The Chrono-Spire of Elyndor*\n\n---\n\n### **Setting:**\n- **Time Rifts:** The world of **Elyndor** is divided by **Time Rifts**, vast fractures in the fabric of reality that allow travelers from different eras to cross into one another's timelines. These rifts are unstable and dangerous, often causing paradoxes and temporal distortions.\n- **Chrono-Spires:** Ancient machines built",
+        "latency_seconds": 7.473505286999966,
+        "generated_tokens": 128
+      }
+    ]
+  },
+  "sft": {
+    "mean_token_nll": 1.4445628771508061,
+    "perplexity": 4.23999833752575,
+    "scored_tokens": 6808,
+    "examples_scored": 40,
+    "mean_generation_latency_seconds": 7.346274007800003,
+    "generations": [
+      {
+        "response": "1. The sender's name and contact information\n2. The date and time of the event\n3. The event details, such as the location, time, and any special instructions or reminders",
+        "latency_seconds": 4.256671462999975,
+        "generated_tokens": 40
+      },
+      {
+        "response": "The roads were frozen solid, causing the car to fishtail on the icy surface.",
+        "latency_seconds": 2.0298724119999747,
+        "generated_tokens": 19
+      },
+      {
+        "response": "Machine learning is a subset of artificial intelligence that enables computers to learn from data and improve their performance on a specific task without being explicitly programmed.",
+        "latency_seconds": 3.1003297400000065,
+        "generated_tokens": 29
+      },
+      {
+        "response": "In the heart of a magical forest, there lived a monster named Glimmer. Glimmer was a creature of light and shadow, with skin that shimmered like the stars and eyes that glowed like the moon. He was not a monster in the traditional sense, but rather a being of nature, a guardian of the forest, and a protector of its secrets.\n\nGlimmer was known for his unique ability to manipulate light and shadow, creating illusions and illusions that could deceive even the most discerning of creatures. He was a guardian of the forest, and his presence was felt by all who wandered through its winding paths.\n\nOne",
+        "latency_seconds": 13.725615498000025,
+        "generated_tokens": 128
+      },
+      {
+        "response": "Title: \"The Chronicles of the Celestial Rift\"\n\nSetting: A distant galaxy known as the Celestial Rift, where the universe is constantly shifting and changing due to the effects of a mysterious phenomenon known as the Rift. This phenomenon causes the stars to move in unpredictable ways, creating rifts in space that can trap travelers in a dimension known as the Void.\n\nMain Characters:\n- Lira, a young and curious explorer who is determined to find the source of the Rift.\n- Kael, a mysterious and enigmatic being who is a guardian of the Void and has a deep connection to the Rift.\n- Zara, a skilled and",
+        "latency_seconds": 13.618880926000031,
+        "generated_tokens": 128
+      }
+    ]
+  },
+  "comparisons": [
+    {
+      "prompt": "Name three important elements in an invitation letter.",
+      "reference": "The three important elements in an invitation letter are:\n1. Purpose of the event: The invitation letter should clearly state the purpose of the event, whether it is a formal occasion, a celebration, a business meeting or a social gathering.\n2. Event details: This comprises of the date, time and location of the event. The recipient of the invitation should know exactly where and when the event is taking place.\n3. RSVP information: The invitation letter should contain clear instructions on how the recipient should respond to the invitation. It should include the name and contact information of the person to whom the recipient should reply, and a deadline for responding.",
+      "base": {
+        "response": "Three important elements in an invitation letter are:\n\n1. **The sender's name and contact information** – This includes the sender's full name, address, phone number, and email address.\n\n2. **The date and time of the event** – This ensures clarity about when the event is happening and helps the recipient plan their schedule.\n\n3. **The event details** – This includes the location, the name of the event, and any additional information, such as whether it's a dinner, a meeting, or a celebration.",
+        "latency_seconds": 6.535910759000046,
+        "generated_tokens": 107
+      },
+      "sft": {
+        "response": "1. The sender's name and contact information\n2. The date and time of the event\n3. The event details, such as the location, time, and any special instructions or reminders",
+        "latency_seconds": 4.256671462999975,
+        "generated_tokens": 40
+      }
+    },
+    {
+      "prompt": "Edit this sentence to make it more concise: “Due to the fact that the roads were frozen solid, the car had fishtailed on the icy surface.”\n\nInput:\nDue to the fact that the roads were frozen solid",
+      "reference": "Since the roads were frozen, the car fishtailed on the icy surface.",
+      "base": {
+        "response": "\"Due to the frozen roads, the car fishtailed on the icy surface.\"",
+        "latency_seconds": 1.0761831890000053,
+        "generated_tokens": 18
+      },
+      "sft": {
+        "response": "The roads were frozen solid, causing the car to fishtail on the icy surface.",
+        "latency_seconds": 2.0298724119999747,
+        "generated_tokens": 19
+      }
+    },
+    {
+      "prompt": "Define the concept of \"machine learning\" in one sentence.",
+      "reference": "Machine learning is a subset of artificial intelligence that involves the development of algorithms and statistical models that enable systems to improve their performance on a specific task over time, using data and past experiences, without being explicitly programmed.",
+      "base": {
+        "response": "Machine learning is a subset of artificial intelligence that enables systems to learn from data, adapt to new information, and make decisions or predictions without being explicitly programmed.",
+        "latency_seconds": 1.917628389000015,
+        "generated_tokens": 32
+      },
+      "sft": {
+        "response": "Machine learning is a subset of artificial intelligence that enables computers to learn from data and improve their performance on a specific task without being explicitly programmed.",
+        "latency_seconds": 3.1003297400000065,
+        "generated_tokens": 29
+      }
+    },
+    {
+      "prompt": "Write a story about a monster that lives in a magical forest",
+      "reference": "Once upon a time, in a deep and magical forest, a monster made its home. It was a creature of awe and of fear, with fur as black as night and eyes that shone like fire. The trees towered above it, their branches reaching towards the sky, and the ground was soft with moss and leaves. The forest was alive with magic, and so was the monster.\n\nThe monster roamed the woods, treading softly on silent paws. It was a guardian of the forest, protector of all the creatures that called it home. For although it looked fearsome, with sharp teeth and long, deadly claws, the monster was kind and gentle at heart.\n\nThe monster had lived in the forest for many years, watching over the plants and animals with a fierce pride. It was powerful, there was no doubt about that, and many travelers spoke in hushed tones of the beast that lurked in the shadows. But it never harmed those who came in peace. It only ever defended those that needed its help.\n\nThe magical forest was a wondrous place, filled with secrets and marvels, and the monster was its most mysterious inhabitant. It moved with grace and ease, a shadow drifting among the trees. There were times when it would disappear for months on end, only to come back and keep watch once more.\n\nSome people whispered that the monster itself was a creature of magic, that it had been born from the very essence of the forest. And perhaps that was true. Perhaps it was the spirit of the land, given form and shape, to protect it from harm. Whatever the truth, the monster was a being to be both feared and respected, for it was a creature of the wild, and it lived in the heart of the magical forest.",
+      "base": {
+        "response": "In the heart of the enchanted forest of Elderglen, where the trees whispered secrets to the wind and the rivers sang lullabies to the moon, there lived a monster known as Thalor, the Guardian of Shadows. He was not a beast in the traditional sense—he was a being of deep, ancient magic, woven from the very essence of the forest itself. His eyes were twin orbs of molten silver, glowing with the wisdom of centuries, and his body was covered in scales that shimmered like starlight, shifting colors with the light of the sun.\n\nThalor was not feared by the forest dwellers, but",
+        "latency_seconds": 7.496298772999978,
+        "generated_tokens": 128
+      },
+      "sft": {
+        "response": "In the heart of a magical forest, there lived a monster named Glimmer. Glimmer was a creature of light and shadow, with skin that shimmered like the stars and eyes that glowed like the moon. He was not a monster in the traditional sense, but rather a being of nature, a guardian of the forest, and a protector of its secrets.\n\nGlimmer was known for his unique ability to manipulate light and shadow, creating illusions and illusions that could deceive even the most discerning of creatures. He was a guardian of the forest, and his presence was felt by all who wandered through its winding paths.\n\nOne",
+        "latency_seconds": 13.725615498000025,
+        "generated_tokens": 128
+      }
+    },
+    {
+      "prompt": "Come up with a storyline that combines elements of fantasy and science fiction.",
+      "reference": "In a futuristic world, a powerful kingdom ruled by a sorceress queen discovers a portal to a new dimension. The kingdom is built upon advanced technology that is powered by magic, and the queen's army is a legion of enchanted, cyborg soldiers. The queen, driven by her thirst for power, decides to explore the new dimension, hoping to expand her reign.\n\nOn the other side of the portal lies an enchanted forest, home to a tribe of mystical creatures. The forest is protected by an ancient tree, imbued with powerful magic that safeguards the forest and its inhabitants. When the queen and her army arrive, they are met with resistance from the tribe, who fear their peaceful way of life will be destroyed by the invaders.\n\nIn an attempt to seize control, the queen orders her cyborg army to capture the ancient tree and harness its power. However, the technology malfunctions when it comes into contact with pure magic, causing devastating consequences.\n\nThe tribe, along with a group of rogue, technologically advanced rebels from the queen's kingdom, must join forces to stop the queen and restore balance to the land. Along the way, they discover the true power of magic, and the importance of working together to protect what is dear to them.\n\nIn this epic battle of technology and magic, the fate of two worlds hangs in the balance.",
+      "base": {
+        "response": "Certainly! Here's a compelling storyline that blends **fantasy** and **science fiction** elements, set in a world where ancient magic and futuristic technology coexist.\n\n---\n\n### **Title:** *The Chrono-Spire of Elyndor*\n\n---\n\n### **Setting:**\n- **Time Rifts:** The world of **Elyndor** is divided by **Time Rifts**, vast fractures in the fabric of reality that allow travelers from different eras to cross into one another's timelines. These rifts are unstable and dangerous, often causing paradoxes and temporal distortions.\n- **Chrono-Spires:** Ancient machines built",
+        "latency_seconds": 7.473505286999966,
+        "generated_tokens": 128
+      },
+      "sft": {
+        "response": "Title: \"The Chronicles of the Celestial Rift\"\n\nSetting: A distant galaxy known as the Celestial Rift, where the universe is constantly shifting and changing due to the effects of a mysterious phenomenon known as the Rift. This phenomenon causes the stars to move in unpredictable ways, creating rifts in space that can trap travelers in a dimension known as the Void.\n\nMain Characters:\n- Lira, a young and curious explorer who is determined to find the source of the Rift.\n- Kael, a mysterious and enigmatic being who is a guardian of the Void and has a deep connection to the Rift.\n- Zara, a skilled and",
+        "latency_seconds": 13.618880926000031,
+        "generated_tokens": 128
+      }
+    }
+  ]
+}
