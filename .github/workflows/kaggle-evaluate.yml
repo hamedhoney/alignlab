@@ -97,33 +97,72 @@ jobs:
             -p kaggle/eval-run \
             --accelerator NvidiaTeslaT4
 
+      - name: Verify Kaggle notebook submission
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "Expected notebook: $KERNEL_ID"
+
+          kaggle kernels list \
+            --mine \
+            --csv | grep -F "$KERNEL_ID" || {
+              echo "Notebook not found in Kaggle listing."
+              exit 1
+            }
+
       - name: Wait for Kaggle evaluation
         shell: bash
         run: |
           set -euo pipefail
 
-          for attempt in $(seq 1 120); do
-            STATUS=$(kaggle kernels status "$KERNEL_ID")
+          echo "Monitoring Kaggle notebook: $KERNEL_ID"
 
-            echo "Attempt $attempt:"
+          for attempt in $(seq 1 120); do
+            echo "Status check $attempt/120"
+
+            set +e
+            STATUS=$(kaggle kernels status "$KERNEL_ID" 2>&1)
+            EXIT_CODE=$?
+            set -e
+
             echo "$STATUS"
 
+            if [ "$EXIT_CODE" -ne 0 ]; then
+              if echo "$STATUS" | grep -Eqi \
+                '404|not found|GetKernelSessionStatus'; then
+                if [ "$attempt" -le 10 ]; then
+                  echo "Session not available yet; retrying..."
+                  sleep 120
+                  continue
+                fi
+
+                echo "Kaggle session still not found." >&2
+                echo "Verify KERNEL_ID and notebook submission." >&2
+                exit 1
+              fi
+
+              echo "Unexpected Kaggle API error." >&2
+              exit 1
+            fi
+
             if echo "$STATUS" | grep -Eqi \
-              'status:?[[:space:]]*complete|status:?[[:space:]]*complete[d]?'; then
+              'status:?[[:space:]]*(complete|completed)'; then
               echo "Kaggle evaluation completed."
               exit 0
             fi
 
             if echo "$STATUS" | grep -Eqi \
               'status:?[[:space:]]*(error|failed|cancelled|canceled)'; then
-              echo "Kaggle evaluation failed."
+              echo "Kaggle evaluation failed." >&2
               exit 1
             fi
 
+            echo "Evaluation pending or running."
             sleep 120
           done
 
-          echo "Timed out waiting for Kaggle evaluation." >&2
+          echo "Timed out waiting for evaluation." >&2
           exit 1
 
       - name: Download evaluation outputs
