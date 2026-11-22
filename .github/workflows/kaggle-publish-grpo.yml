@@ -1,0 +1,90 @@
+name: Publish GRPO Adapter to Hugging Face
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: alignlab-publish-grpo
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_API_TOKEN }}
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      KERNEL_ID: hamedhani/05-alignlab-grpo-training
+      HF_REPO_ID: hamedready/alignlab-qwen3-1.7b-grpo
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install clients
+        run: python -m pip install kaggle six 'huggingface_hub>=0.30,<1'
+      - name: Verify credentials and Kaggle completion
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$KAGGLE_API_TOKEN"
+          test -n "$HF_TOKEN"
+          status=$(kaggle kernels status "$KERNEL_ID")
+          echo "$status"
+          echo "$status" | grep -Fq 'KernelWorkerStatus.COMPLETE'
+      - name: Download existing GRPO outputs
+        run: |
+          mkdir -p artifacts/grpo
+          kaggle kernels output "$KERNEL_ID" -p artifacts/grpo
+          find artifacts/grpo -type f
+      - name: Validate and publish final adapter
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          from huggingface_hub import HfApi
+
+          root = Path('artifacts/grpo')
+          reports = list(root.rglob('grpo_report.json'))
+          if not reports:
+              raise RuntimeError('Missing grpo_report.json')
+          candidates = []
+          for config in root.rglob('adapter_config.json'):
+              folder = config.parent
+              if 'checkpoint-' in str(folder):
+                  continue
+              if not any((folder / f).is_file() for f in (
+                  'adapter_model.safetensors', 'adapter_model.bin'
+              )):
+                  continue
+              metadata = json.loads(config.read_text())
+              if metadata.get('peft_type') == 'LORA':
+                  candidates.append(folder)
+          if len(candidates) != 1:
+              raise RuntimeError(f'Expected one final adapter, found {candidates}')
+          api = HfApi(token=os.environ['HF_TOKEN'])
+          print('Authenticated as:', api.whoami()['name'])
+          repo = os.environ['HF_REPO_ID']
+          api.create_repo(repo_id=repo, repo_type='model', private=True, exist_ok=True)
+          api.upload_folder(
+              repo_id=repo,
+              repo_type='model',
+              folder_path=str(candidates[0]),
+              commit_message='Publish GRPO adapter from Kaggle',
+          )
+          print('Published:', f'https://huggingface.co/{repo}')
+          PY
+      - name: Preserve GRPO outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: alignlab-grpo-published-outputs
+          path: artifacts/grpo/
+          if-no-files-found: warn
+          retention-days: 30

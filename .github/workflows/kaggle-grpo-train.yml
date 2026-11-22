@@ -1,0 +1,93 @@
+name: Train GRPO on Kaggle
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: alignlab-grpo-training
+  cancel-in-progress: false
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    env:
+      KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_API_TOKEN }}
+      KERNEL_ID: hamedhani/05-alignlab-grpo-training
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install Kaggle CLI
+        run: python -m pip install kaggle six
+      - name: Prepare GRPO notebook
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$KAGGLE_API_TOKEN"
+          mkdir -p kaggle/grpo-run
+          cp notebooks/05_grpo_training.ipynb kaggle/grpo-run/
+          cp kaggle/grpo/kernel-metadata.json kaggle/grpo-run/kernel-metadata.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          meta = json.loads(Path('kaggle/grpo-run/kernel-metadata.json').read_text())
+          assert meta['id'] == 'hamedhani/05-alignlab-grpo-training'
+          assert meta['title'] == '05 AlignLab GRPO Training'
+          assert meta['code_file'] == '05_grpo_training.ipynb'
+          PY
+      - name: Submit GRPO training
+        run: kaggle kernels push -p kaggle/grpo-run --accelerator NvidiaTeslaT4
+      - name: Wait for Kaggle
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 120); do
+            set +e
+            status=$(kaggle kernels status "$KERNEL_ID" 2>&1)
+            code=$?
+            set -e
+            echo "Attempt $attempt: $status"
+            if [ "$code" -ne 0 ]; then
+              if echo "$status" | grep -Eqi '404|GetKernelSessionStatus'; then
+                sleep 30
+                continue
+              fi
+              exit "$code"
+            fi
+            if echo "$status" | grep -Fq 'KernelWorkerStatus.COMPLETE'; then
+              exit 0
+            fi
+            if echo "$status" | grep -Eq 'KernelWorkerStatus\.(ERROR|FAILED|CANCELLED|CANCELED)'; then
+              exit 1
+            fi
+            sleep 60
+          done
+          echo 'Kaggle training timed out' >&2
+          exit 1
+      - name: Download GRPO outputs
+        run: |
+          mkdir -p artifacts/grpo
+          kaggle kernels output "$KERNEL_ID" -p artifacts/grpo
+          find artifacts/grpo -type f
+          find artifacts/grpo -name grpo_report.json -print -quit | grep -q .
+      - name: Preserve artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: alignlab-grpo-results
+          path: artifacts/grpo/
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Summary
+        if: success()
+        run: |
+          echo '## GRPO training complete' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Kaggle: https://www.kaggle.com/code/hamedhani/05-alignlab-grpo-training' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Run Publish GRPO Adapter separately to upload to Hugging Face.' >> "$GITHUB_STEP_SUMMARY"

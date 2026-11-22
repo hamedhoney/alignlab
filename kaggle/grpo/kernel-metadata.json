@@ -1,0 +1,15 @@
+{
+  "id": "hamedhani/05-alignlab-grpo-training",
+  "title": "05 AlignLab GRPO Training",
+  "code_file": "05_grpo_training.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_internet": true,
+  "machine_shape": "NvidiaTeslaT4",
+  "dataset_sources": [],
+  "competition_sources": [],
+  "kernel_sources": [],
+  "model_sources": []
+}
