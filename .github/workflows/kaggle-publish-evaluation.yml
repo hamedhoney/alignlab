@@ -1,0 +1,97 @@
+name: Publish Kaggle Evaluation Results
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: alignlab-evaluation-publishing
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_API_TOKEN }}
+      KERNEL_ID: hamedhani/02-alignlab-model-evaluation
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install Kaggle CLI
+        run: python -m pip install kaggle six
+
+      - name: Confirm completed evaluation
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$KAGGLE_API_TOKEN"
+          STATUS=$(kaggle kernels status "$KERNEL_ID")
+          echo "$STATUS"
+          echo "$STATUS" | grep -Fq 'KernelWorkerStatus.COMPLETE' || {
+            echo 'Latest Kaggle evaluation is not complete; nothing published.' >&2
+            exit 1
+          }
+
+      - name: Download existing Kaggle outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/evaluation
+          kaggle kernels output "$KERNEL_ID" -p artifacts/evaluation
+          find artifacts/evaluation -type f
+          REPORT=$(find artifacts/evaluation -type f -name model_comparison.json -print -quit)
+          test -n "$REPORT" || {
+            echo 'model_comparison.json not found in Kaggle outputs.' >&2
+            exit 1
+          }
+          python -m json.tool "$REPORT" > /dev/null
+          echo "REPORT=$REPORT" >> "$GITHUB_ENV"
+
+      - name: Save report to repository
+        shell: bash
+        env:
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          DEST="results/evaluation/publish-${RUN_ID}-attempt-${RUN_ATTEMPT}"
+          mkdir -p "$DEST"
+          cp "$REPORT" "$DEST/model_comparison.json"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f "$DEST/model_comparison.json"
+          git commit -m "results: publish Kaggle evaluation ${RUN_ID}"
+          git fetch origin "$GITHUB_REF_NAME"
+          git rebase "origin/$GITHUB_REF_NAME"
+          git push origin "HEAD:$GITHUB_REF_NAME"
+          echo "REPORT_DEST=$DEST/model_comparison.json" >> "$GITHUB_ENV"
+
+      - name: Upload downloaded outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: alignlab-existing-evaluation-${{ github.run_id }}
+          path: artifacts/evaluation/
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Summary
+        if: success()
+        run: |
+          echo '## Existing Kaggle results published' >> "$GITHUB_STEP_SUMMARY"
+          echo '' >> "$GITHUB_STEP_SUMMARY"
+          echo "Committed report: \`$REPORT_DEST\`" >> "$GITHUB_STEP_SUMMARY"
+          echo '' >> "$GITHUB_STEP_SUMMARY"
+          echo 'No GPU evaluation was started by this workflow.' >> "$GITHUB_STEP_SUMMARY"
